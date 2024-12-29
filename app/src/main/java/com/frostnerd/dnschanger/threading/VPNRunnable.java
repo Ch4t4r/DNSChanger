@@ -170,7 +170,7 @@ public class VPNRunnable implements Runnable {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(service, Util.createImportantChannel(service));
         builder.setContentTitle(service.getString(R.string.warning));
         builder.setSmallIcon(R.drawable.ic_stat_small_icon);
-        builder.setContentIntent(PendingIntent.getActivity(service, 20, new Intent(service, PinActivity.class), 0));
+        builder.setContentIntent(PendingIntent.getActivity(service, 20, new Intent(service, PinActivity.class), PendingIntent.FLAG_IMMUTABLE));
         builder.setAutoCancel(true);
         builder.setOngoing(false);
         builder.setPriority(NotificationCompat.PRIORITY_HIGH);
@@ -263,7 +263,7 @@ public class VPNRunnable implements Runnable {
             builder.setMtu(1500);
         }else builder.setMtu(1280);
         LogFactory.writeMessage(service, new String[]{LOG_TAG, "[VPNTHREAD]", ID}, "Tunnel interface created, not yet connected");
-        builder.setConfigureIntent(PendingIntent.getActivity(service, 12, new Intent(service, PinActivity.class), PendingIntent.FLAG_CANCEL_CURRENT));
+        builder.setConfigureIntent(PendingIntent.getActivity(service, 12, new Intent(service, PinActivity.class), PendingIntent.FLAG_CANCEL_CURRENT|PendingIntent.FLAG_IMMUTABLE));
     }
     public static final Map<String, InetAddress> addressRemap = new HashMap<>();
     private final String addressRemapBase = "244.0.0.";

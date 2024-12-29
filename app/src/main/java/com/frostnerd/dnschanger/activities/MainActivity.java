@@ -129,7 +129,7 @@ public class MainActivity extends NavigationDrawerActivity implements RuleImport
         startedActivity = false;
         // Receiver is not unregistered in onPause() because the app is in the background when a shortcut
         // is created
-        registerReceiver(shortcutReceiver, new IntentFilter(Util.BROADCAST_SHORTCUT_CREATED));
+        registerReceiver(shortcutReceiver, new IntentFilter(Util.BROADCAST_SHORTCUT_CREATED), Context.RECEIVER_NOT_EXPORTED);
     }
 
     @Override
@@ -145,7 +145,7 @@ public class MainActivity extends NavigationDrawerActivity implements RuleImport
         if(preferences.getBoolean( "first_run", true)) preferences.put( "excluded_apps", new ArraySet<>(Arrays.asList(getResources().getStringArray(R.array.default_blacklist))));
         if(preferences.getBoolean( "first_run", true) && Util.isTaskerInstalled(this)){
             LogFactory.writeMessage(this, LOG_TAG, "Showing dialog telling the user that this app supports Tasker");
-            new AlertDialog.Builder(this,ThemeHandler.getDialogTheme(this)).setTitle(R.string.tasker_support).setMessage(R.string.app_supports_tasker_text).setPositiveButton(R.string.got_it, new DialogInterface.OnClickListener() {
+            new AlertDialog.Builder(this,ThemeHandler.getDialogTheme(this)).setTitle(R.string.tasker_support).setMessage(R.string.app_supports_tasker_text).setPositiveButton(com.frostnerd.utils.design.R.string.got_it, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.cancel();
@@ -253,7 +253,9 @@ public class MainActivity extends NavigationDrawerActivity implements RuleImport
 
     @Override
     protected Configuration getConfiguration() {
-        return Configuration.withDefaults().setDismissFragmentsOnPause(false);
+        Configuration config = Configuration.Companion.withDefaults();
+        config.setDismissFragmentsOnPause$com_frostnerd_utilskt_lifecycle(true);
+        return config;
     }
 
     @Override

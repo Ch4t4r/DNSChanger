@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.frostnerd.dnschanger"
     android:installLocation="internalOnly">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -16,12 +15,12 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
-    <permission
-        android:name="android.permission.INTERACT_ACROSS_USERS_FULL"
-        android:protectionLevel="signature" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
     <permission
         android:name="com.frostnerd.dnschanger.ACCESS_DATA"
@@ -62,6 +61,7 @@
         <activity
             android:name=".activities.MainActivity"
             android:configChanges="orientation|keyboardHidden"
+            android:exported="true"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop">
             <intent-filter android:label="@string/deep_link_title">
@@ -87,6 +87,8 @@
         <service
             android:name=".services.DNSVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
+            android:foregroundServiceType="systemExempted"
+            android:exported="true"
             android:stopWithTask="false">
             <intent-filter>
                 <action android:name="android.net.VpnService" />
@@ -189,6 +191,7 @@
         <activity
             android:name=".activities.PinActivity"
             android:launchMode="singleTask"
+            android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.Dialog.Alert">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -227,6 +230,7 @@
         <service
             android:name=".tiles.TileStartStop"
             android:icon="@drawable/ic_stat_resume"
+            android:exported="true"
             android:label="@string/tile_start_stop"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
@@ -241,6 +245,7 @@
             android:name=".tiles.TilePauseResume"
             android:icon="@drawable/ic_stat_resume"
             android:label="@string/tile_pause_resume"
+            android:exported="true"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
@@ -252,6 +257,7 @@
 
         <activity
             android:name=".activities.SettingsImportActivity"
+            android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.Dialog.Alert">
             <intent-filter android:priority="50">
                 <action android:name="android.intent.action.VIEW" />
@@ -284,6 +290,7 @@
 
         <receiver
             android:name=".receivers.AdminReceiver"
+            android:exported="true"
             android:description="@string/device_admin_description"
             android:label="@string/device_admin"
             android:permission="android.permission.BIND_DEVICE_ADMIN">
@@ -295,7 +302,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".receivers.UpdateReceiver">
+        <receiver android:name=".receivers.UpdateReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>

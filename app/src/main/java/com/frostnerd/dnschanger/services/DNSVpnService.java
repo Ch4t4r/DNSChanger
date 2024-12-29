@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ServiceInfo;
 import android.net.VpnService;
 import android.os.Binder;
 import android.os.Build;
@@ -118,10 +119,10 @@ public class DNSVpnService extends VpnService {
         a1.title = getString(threadRunning ? R.string.action_pause : R.string.action_resume);
         a1.actionIntent = pinProtected ? PendingIntent.getActivity(this,14,new Intent(this, PinActivity.class).setAction(new Random().nextInt(50) + "_action").
                 putExtra(threadRunning ? "stop_vpn" : "start_vpn", true).putExtra("redirectToService",true), PendingIntent.FLAG_UPDATE_CURRENT) :
-                PendingIntent.getService(this, 15, new Intent(this, DNSVpnService.class).setAction(new Random().nextInt(50) + "_action").putExtra(threadRunning ? VPNServiceArgument.COMMAND_STOP_VPN.getArgument() : VPNServiceArgument.COMMAND_START_VPN.getArgument(), true), PendingIntent.FLAG_CANCEL_CURRENT);
+                PendingIntent.getService(this, 15, new Intent(this, DNSVpnService.class).setAction(new Random().nextInt(50) + "_action").putExtra(threadRunning ? VPNServiceArgument.COMMAND_STOP_VPN.getArgument() : VPNServiceArgument.COMMAND_START_VPN.getArgument(), true), PendingIntent.FLAG_CANCEL_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         notificationBuilder.mActions.get(1).actionIntent = pinProtected ? PendingIntent.getActivity(this,16,new Intent(this, PinActivity.class).
                 setAction(new Random().nextInt(50) + "_action").putExtra("destroy", true).putExtra("redirectToService",true), PendingIntent.FLAG_UPDATE_CURRENT) : PendingIntent.getService(this, 7, new Intent(this, DNSVpnService.class)
-                .setAction(StringUtil.randomString(80) + "_action").putExtra(VPNServiceArgument.COMMAND_STOP_SERVICE.getArgument(), true), PendingIntent.FLAG_CANCEL_CURRENT);
+                .setAction(StringUtil.randomString(80) + "_action").putExtra(VPNServiceArgument.COMMAND_STOP_SERVICE.getArgument(), true), PendingIntent.FLAG_CANCEL_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         notificationBuilder.setContentTitle(getString(threadRunning ? R.string.active : R.string.paused));
         String excludedAppsText = (excludedApps.size() != 0 ? "\n" +
                 getString(excludedWhitelisted ? R.string.notification_x_whitelisted : R.string.notification_x_blacklisted)
@@ -178,7 +179,7 @@ public class DNSVpnService extends VpnService {
             notificationBuilder = new NotificationCompat.Builder(this, Util.createNotificationChannel(this, true));
             notificationBuilder.setSmallIcon(R.drawable.ic_stat_small_icon); //TODO Update Image
             notificationBuilder.setContentTitle(getString(R.string.app_name));
-            notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 6, new Intent(this, PinActivity.class), 0));
+            notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 6, new Intent(this, PinActivity.class), PendingIntent.FLAG_IMMUTABLE));
             notificationBuilder.setAutoCancel(false);
             notificationBuilder.setOngoing(true);
             notificationBuilder.setUsesChronometer(true);
@@ -232,10 +233,10 @@ public class DNSVpnService extends VpnService {
         super.onStartCommand(intent, flags, startId);
         //intent = intent == null ? intent : restoreSettings(intent);
         LogFactory.writeMessage(this, new String[]{LOG_TAG, "[ONSTARTCOMMAND]"}, "Got StartCommand", intent);
-        if(notificationBuilder != null) startForeground(NOTIFICATION_ID, notificationBuilder.build());
+        if(notificationBuilder != null) startForeground(NOTIFICATION_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
         else {
             initNotification();
-            startForeground(NOTIFICATION_ID, notificationBuilder.build());
+            startForeground(NOTIFICATION_ID, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
         }
         if(Utils.isServiceRunning(this, RuleImportService.class)){
             LogFactory.writeMessage(this, new String[]{LOG_TAG, "[ONSTARTCOMMAND]"}, "Not starting the service because rules are currently being imported");

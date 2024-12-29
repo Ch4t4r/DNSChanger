@@ -79,14 +79,12 @@ public final class Util {
     static final Pattern ipv4WithPort = Pattern.compile("([0-9]{1,3}\\.){3}[0-9]{1,3}(:[0-9]{1,5})?");
 
     public static synchronized void updateTiles(Context context) {
-        if(context == null)throw new IllegalStateException("The context passed to updateTiles is null.");
+        if (context == null)
+            throw new IllegalStateException("The context passed to updateTiles is null.");
         LogFactory.writeMessage(context, new String[]{LOG_TAG, LogFactory.STATIC_TAG}, "Trying to update Tiles");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            TileService.requestListeningState(context, new ComponentName(context, TileStartStop.class));
-            TileService.requestListeningState(context, new ComponentName(context, TilePauseResume.class));
-            LogFactory.writeMessage(context, new String[]{LOG_TAG, LogFactory.STATIC_TAG}, "Tiles updated");
-        } else
-            LogFactory.writeMessage(context, new String[]{LOG_TAG, LogFactory.STATIC_TAG}, "Not updating Tiles (Version is below Android N)");
+        TileService.requestListeningState(context, new ComponentName(context, TileStartStop.class));
+        TileService.requestListeningState(context, new ComponentName(context, TilePauseResume.class));
+        LogFactory.writeMessage(context, new String[]{LOG_TAG, LogFactory.STATIC_TAG}, "Tiles updated");
     }
 
     public static IPPortPair validateInput(String input, boolean iPv6, boolean allowEmpty, boolean allowLoopback, int defaultPort) {
@@ -127,48 +125,46 @@ public final class Util {
     }
 
     public static void updateAppShortcuts(Context context) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
-            ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
-            if (shortcutManager != null && !PreferencesAccessor.areAppShortcutsEnabled(context)) {
-                try {
-                    shortcutManager.removeAllDynamicShortcuts();
-                } catch (Exception ignored) {
+        ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
+        if (shortcutManager != null && !PreferencesAccessor.areAppShortcutsEnabled(context)) {
+            try {
+                shortcutManager.removeAllDynamicShortcuts();
+            } catch (Exception ignored) {
 
-                }
-                return;
-            } else if(shortcutManager == null) return;
-            boolean pinProtected = PreferencesAccessor.isPinProtected(context, PreferencesAccessor.PinProtectable.APP_SHORTCUT);
-            List<ShortcutInfo> shortcutInfos = new ArrayList<>();
-            if (isServiceThreadRunning()) {
-                Bundle extras1 = new Bundle();
-                extras1.putBoolean("stop_vpn", true);
-                extras1.putBoolean("redirectToService", true);
-                Bundle extras2 = new Bundle();
-                extras2.putBoolean("destroy", true);
-                extras2.putBoolean("redirectToService", true);
-                shortcutInfos.add(new ShortcutInfo.Builder(context, "id1").setShortLabel(context.getString(R.string.tile_pause))
-                        .setLongLabel(context.getString(R.string.tile_pause)).setIcon(Icon.createWithResource(context, R.drawable.ic_stat_pause_dark))
-                        .setIntent(pinProtected ? new Intent(context.getApplicationContext(), PinActivity.class).putExtras(extras1).setAction(StringUtil.randomString(40)) : DNSVpnService.getStopVPNIntent(context.getApplicationContext())).build());
-                shortcutInfos.add(new ShortcutInfo.Builder(context, "id2").setShortLabel(context.getString(R.string.tile_stop))
-                        .setLongLabel(context.getString(R.string.tile_stop)).setIcon(Icon.createWithResource(context, R.drawable.ic_stat_stop_dark))
-                        .setIntent(pinProtected ? new Intent(context.getApplicationContext(), PinActivity.class).putExtras(extras2).setAction(StringUtil.randomString(40)) : DNSVpnService.getDestroyIntent(context.getApplicationContext())).build());
-            } else if (isServiceRunning(context)) {
-                Bundle extras = new Bundle();
-                extras.putBoolean("start_vpn", true);
-                extras.putBoolean("redirectToService", true);
-                shortcutInfos.add(new ShortcutInfo.Builder(context, "id3").setShortLabel(context.getString(R.string.tile_resume))
-                        .setLongLabel(context.getString(R.string.tile_resume)).setIcon(Icon.createWithResource(context, R.drawable.ic_stat_resume_dark))
-                        .setIntent(pinProtected ? new Intent(context.getApplicationContext(), PinActivity.class).putExtras(extras).setAction(StringUtil.randomString(40)) : DNSVpnService.getStartVPNIntent(context.getApplicationContext())).build());
-            } else {
-                Bundle extras = new Bundle();
-                extras.putBoolean("start_vpn", true);
-                extras.putBoolean("redirectToService", true);
-                shortcutInfos.add(new ShortcutInfo.Builder(context, "id4").setShortLabel(context.getString(R.string.tile_start)).
-                        setLongLabel(context.getString(R.string.tile_start)).setIcon(Icon.createWithResource(context, R.drawable.ic_stat_resume_dark))
-                        .setIntent(pinProtected ? new Intent(context.getApplicationContext(), PinActivity.class).putExtras(extras).setAction(StringUtil.randomString(40)) : DNSVpnService.getStartVPNIntent(context.getApplicationContext())).build());
             }
-            shortcutManager.setDynamicShortcuts(shortcutInfos);
+            return;
+        } else if (shortcutManager == null) return;
+        boolean pinProtected = PreferencesAccessor.isPinProtected(context, PreferencesAccessor.PinProtectable.APP_SHORTCUT);
+        List<ShortcutInfo> shortcutInfos = new ArrayList<>();
+        if (isServiceThreadRunning()) {
+            Bundle extras1 = new Bundle();
+            extras1.putBoolean("stop_vpn", true);
+            extras1.putBoolean("redirectToService", true);
+            Bundle extras2 = new Bundle();
+            extras2.putBoolean("destroy", true);
+            extras2.putBoolean("redirectToService", true);
+            shortcutInfos.add(new ShortcutInfo.Builder(context, "id1").setShortLabel(context.getString(R.string.tile_pause))
+                    .setLongLabel(context.getString(R.string.tile_pause)).setIcon(Icon.createWithResource(context, R.drawable.ic_stat_pause_dark))
+                    .setIntent(pinProtected ? new Intent(context.getApplicationContext(), PinActivity.class).putExtras(extras1).setAction(StringUtil.randomString(40)) : DNSVpnService.getStopVPNIntent(context.getApplicationContext())).build());
+            shortcutInfos.add(new ShortcutInfo.Builder(context, "id2").setShortLabel(context.getString(R.string.tile_stop))
+                    .setLongLabel(context.getString(R.string.tile_stop)).setIcon(Icon.createWithResource(context, R.drawable.ic_stat_stop_dark))
+                    .setIntent(pinProtected ? new Intent(context.getApplicationContext(), PinActivity.class).putExtras(extras2).setAction(StringUtil.randomString(40)) : DNSVpnService.getDestroyIntent(context.getApplicationContext())).build());
+        } else if (isServiceRunning(context)) {
+            Bundle extras = new Bundle();
+            extras.putBoolean("start_vpn", true);
+            extras.putBoolean("redirectToService", true);
+            shortcutInfos.add(new ShortcutInfo.Builder(context, "id3").setShortLabel(context.getString(R.string.tile_resume))
+                    .setLongLabel(context.getString(R.string.tile_resume)).setIcon(Icon.createWithResource(context, R.drawable.ic_stat_resume_dark))
+                    .setIntent(pinProtected ? new Intent(context.getApplicationContext(), PinActivity.class).putExtras(extras).setAction(StringUtil.randomString(40)) : DNSVpnService.getStartVPNIntent(context.getApplicationContext())).build());
+        } else {
+            Bundle extras = new Bundle();
+            extras.putBoolean("start_vpn", true);
+            extras.putBoolean("redirectToService", true);
+            shortcutInfos.add(new ShortcutInfo.Builder(context, "id4").setShortLabel(context.getString(R.string.tile_start)).
+                    setLongLabel(context.getString(R.string.tile_start)).setIcon(Icon.createWithResource(context, R.drawable.ic_stat_resume_dark))
+                    .setIntent(pinProtected ? new Intent(context.getApplicationContext(), PinActivity.class).putExtras(extras).setAction(StringUtil.randomString(40)) : DNSVpnService.getStartVPNIntent(context.getApplicationContext())).build());
         }
+        shortcutManager.setDynamicShortcuts(shortcutInfos);
     }
 
     public static boolean isServiceRunning(Context c) {
@@ -185,7 +181,7 @@ public final class Util {
 
     public static synchronized void deleteDatabase(Context context) {
         DatabaseHelper helper = DatabaseHelper.getInstance(context);
-        if(helper != null)helper.close();
+        if (helper != null) helper.close();
         context.deleteDatabase("data");
         context.getDatabasePath("data.db").delete();
     }
@@ -207,19 +203,17 @@ public final class Util {
         shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         shortcutIntent.putExtra("servers", serializableToString(servers));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ShortcutManager shortcutManager = Utils.requireNonNull((ShortcutManager) context.getSystemService(Activity.SHORTCUT_SERVICE));
-            if (shortcutManager.isRequestPinShortcutSupported()) {
-                ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(context, StringUtil.randomString(30))
-                        .setIcon(Icon.createWithResource(context, R.mipmap.ic_launcher))
-                        .setShortLabel(name)
-                        .setLongLabel(name)
-                        .setIntent(shortcutIntent)
-                        .build();
-                PendingIntent intent = PendingIntent.getBroadcast(context, 5, new Intent(Util.BROADCAST_SHORTCUT_CREATED), 0);
-                shortcutManager.requestPinShortcut(shortcutInfo, intent.getIntentSender());
-                return;
-            }
+        ShortcutManager shortcutManager = Utils.requireNonNull((ShortcutManager) context.getSystemService(Activity.SHORTCUT_SERVICE));
+        if (shortcutManager.isRequestPinShortcutSupported()) {
+            ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(context, StringUtil.randomString(30))
+                    .setIcon(Icon.createWithResource(context, R.mipmap.ic_launcher))
+                    .setShortLabel(name)
+                    .setLongLabel(name)
+                    .setIntent(shortcutIntent)
+                    .build();
+            PendingIntent intent = PendingIntent.getBroadcast(context, 5, new Intent(Util.BROADCAST_SHORTCUT_CREATED), PendingIntent.FLAG_IMMUTABLE);
+            shortcutManager.requestPinShortcut(shortcutInfo, intent.getIntentSender());
+            return;
         }
         Intent addIntent = new Intent();
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
@@ -231,82 +225,70 @@ public final class Util {
         context.sendBroadcast(addIntent);
     }
 
-    public static void startService(Context context, Intent intent){
-        if(PreferencesAccessor.isEverythingDisabled(context))return;
-        if((intent.getComponent() != null && intent.getComponent().getClassName().equals(DNSVpnService.class.getName()) &&
-                (PreferencesAccessor.isNotificationEnabled(context)) || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)){
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent);
-            } else  context.startService(intent);
-        }else context.startService(intent);
+    public static void startService(Context context, Intent intent) {
+        if (PreferencesAccessor.isEverythingDisabled(context)) return;
+        if ((intent.getComponent() != null && intent.getComponent().getClassName().equals(DNSVpnService.class.getName()) &&
+                (PreferencesAccessor.isNotificationEnabled(context)) || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)) {
+            context.startForegroundService(intent);
+        } else context.startService(intent);
     }
 
-    public static String createNotificationChannel(Context context, boolean allowHiding){
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationManager notificationManager = Utils.requireNonNull((NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE));
-            if(allowHiding && PreferencesAccessor.shouldHideNotificationIcon(context)){
-                NotificationChannel channel = new NotificationChannel("noIconChannel", context.getString(R.string.notification_channel_hiddenicon), NotificationManager.IMPORTANCE_MIN);
-                channel.enableLights(false);
-                channel.enableVibration(false);
-                channel.setDescription(context.getString(R.string.notification_channel_hiddenicon_description));
-                channel.setImportance(NotificationManager.IMPORTANCE_MIN);
-                channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-                notificationManager.createNotificationChannel(channel);
-                return "noIconChannel";
-            }else{
-                NotificationChannel channel = new NotificationChannel("defaultchannel", context.getString(R.string.notification_channel_default), NotificationManager.IMPORTANCE_LOW);
-                channel.enableLights(false);
-                channel.enableVibration(false);
-                channel.setDescription(context.getString(R.string.notification_channel_default_description));
-                channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-                notificationManager.createNotificationChannel(channel);
-                return "defaultchannel";
-            }
-        }else{
+    public static String createNotificationChannel(Context context, boolean allowHiding) {
+        NotificationManager notificationManager = Utils.requireNonNull((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+        if (allowHiding && PreferencesAccessor.shouldHideNotificationIcon(context)) {
+            NotificationChannel channel = new NotificationChannel("noIconChannel", context.getString(R.string.notification_channel_hiddenicon), NotificationManager.IMPORTANCE_MIN);
+            channel.enableLights(false);
+            channel.enableVibration(false);
+            channel.setDescription(context.getString(R.string.notification_channel_hiddenicon_description));
+            channel.setImportance(NotificationManager.IMPORTANCE_MIN);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            notificationManager.createNotificationChannel(channel);
+            return "noIconChannel";
+        } else {
+            NotificationChannel channel = new NotificationChannel("defaultchannel", context.getString(R.string.notification_channel_default), NotificationManager.IMPORTANCE_LOW);
+            channel.enableLights(false);
+            channel.enableVibration(false);
+            channel.setDescription(context.getString(R.string.notification_channel_default_description));
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            notificationManager.createNotificationChannel(channel);
             return "defaultchannel";
         }
     }
 
     public static String createConnectivityCheckChannel(Context context) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationManager notificationManager = Utils.requireNonNull((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
-            NotificationChannel channel = new NotificationChannel("networkcheckchannel", context.getString(R.string.notification_channel_networkcheck), NotificationManager.IMPORTANCE_LOW);
-            channel.enableLights(false);
-            channel.enableVibration(false);
-            channel.setDescription(context.getString(R.string.notification_channel_networkcheck_description));
-            channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
-            channel.setImportance(NotificationManager.IMPORTANCE_LOW);
-            channel.setShowBadge(false);
-            notificationManager.createNotificationChannel(channel);
-        }
+        NotificationManager notificationManager = Utils.requireNonNull((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+        NotificationChannel channel = new NotificationChannel("networkcheckchannel", context.getString(R.string.notification_channel_networkcheck), NotificationManager.IMPORTANCE_LOW);
+        channel.enableLights(false);
+        channel.enableVibration(false);
+        channel.setDescription(context.getString(R.string.notification_channel_networkcheck_description));
+        channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+        channel.setImportance(NotificationManager.IMPORTANCE_LOW);
+        channel.setShowBadge(false);
+        notificationManager.createNotificationChannel(channel);
         return "networkcheckchannel";
     }
 
     public static String createImportantChannel(Context context) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationManager notificationManager = Utils.requireNonNull((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
-            NotificationChannel channel = new NotificationChannel("defaultchannel", context.getString(R.string.notification_channel_default), NotificationManager.IMPORTANCE_HIGH);
-            channel.enableLights(false);
-            channel.enableVibration(true);
-            channel.setDescription(context.getString(R.string.notification_channel_default_description));
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            notificationManager.createNotificationChannel(channel);
-            return "defaultchannel";
-        } else {
-            return "defaultchannel";
-        }
+        NotificationManager notificationManager = Utils.requireNonNull((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+        NotificationChannel channel = new NotificationChannel("defaultchannel", context.getString(R.string.notification_channel_default), NotificationManager.IMPORTANCE_HIGH);
+        channel.enableLights(false);
+        channel.enableVibration(true);
+        channel.setDescription(context.getString(R.string.notification_channel_default_description));
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        notificationManager.createNotificationChannel(channel);
+        return "defaultchannel";
     }
 
     public static void runBackgroundConnectivityCheck(Context context, boolean handleInitialState) {
-        runBackgroundConnectivityCheck(context,handleInitialState, false);
+        runBackgroundConnectivityCheck(context, handleInitialState, false);
     }
 
     public static void runBackgroundConnectivityCheck(Context context, boolean handleInitialState, boolean forceForeground) {
-        if(shouldRunNetworkCheck(context) && !Util.isServiceRunning(context)) {
+        if (shouldRunNetworkCheck(context) && !Util.isServiceRunning(context)) {
             Intent serviceIntent = new Intent(context, ConnectivityBackgroundService.class)
                     .putExtra("initial", handleInitialState);
-            if(forceForeground) serviceIntent.putExtra("forceForeground", true);
-            if(forceForeground || PreferencesAccessor.runConnectivityCheckWithPrivilege(context)) {
+            if (forceForeground) serviceIntent.putExtra("forceForeground", true);
+            if (forceForeground || PreferencesAccessor.runConnectivityCheckWithPrivilege(context)) {
                 startForegroundService(context, serviceIntent);
             } else {
                 context.startService(serviceIntent);
@@ -315,11 +297,7 @@ public final class Util {
     }
 
     public static void startForegroundService(Context context, Intent serviceIntent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(serviceIntent);
-        } else {
-            context.startService(serviceIntent);
-        }
+        context.startForegroundService(serviceIntent);
     }
 
     public static void stopBackgroundConnectivityCheck(Context context) {
@@ -334,7 +312,7 @@ public final class Util {
 
     @Nullable
     public static NetworkCheckHandle maybeCreateNetworkCheckHandle(@NonNull Context context, String logTag, boolean handleInitialState) {
-        if(shouldRunNetworkCheck(context)) {
+        if (shouldRunNetworkCheck(context)) {
             boolean handleInitial = handleInitialState && !Preferences.getInstance(context).getBoolean("service_stopped_by_user", false);
             return new NetworkCheckHandle(context, logTag, handleInitialState);
         } else {
@@ -356,18 +334,19 @@ public final class Util {
 
     /**
      * This Method is used instead of getActivity() in a fragment because getActivity() returns null in some rare cases
+     *
      * @param fragment
      * @return
      */
-    public static FragmentActivity getActivity(Fragment fragment){
-        if(fragment.getActivity() == null){
-            if(fragment.getContext() != null && fragment.getContext() instanceof FragmentActivity){
-                return (FragmentActivity)fragment.getContext();
-            }else return null;
-        }else return fragment.getActivity();
+    public static FragmentActivity getActivity(Fragment fragment) {
+        if (fragment.getActivity() == null) {
+            if (fragment.getContext() != null && fragment.getContext() instanceof FragmentActivity) {
+                return (FragmentActivity) fragment.getContext();
+            } else return null;
+        } else return fragment.getActivity();
     }
 
-    public static String serializableToString(Serializable serializable){
+    public static String serializableToString(Serializable serializable) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(
@@ -382,7 +361,7 @@ public final class Util {
         return null;
     }
 
-    public static <T extends Serializable> T serializableFromString(String s){
+    public static <T extends Serializable> T serializableFromString(String s) {
         try {
             return (T) new ObjectInputStream(new Base64InputStream(
                     new ByteArrayInputStream(s.getBytes()), Base64.NO_PADDING
@@ -395,12 +374,13 @@ public final class Util {
         return null;
     }
 
-    public interface ConnectivityCheckCallback{
+    public interface ConnectivityCheckCallback {
         void onCheckDone(boolean result);
     }
 
-    public interface DNSQueryResultListener{
+    public interface DNSQueryResultListener {
         void onSuccess(List<Record<? extends Data>> response);
+
         void onError(@Nullable Exception e);
     }
 }

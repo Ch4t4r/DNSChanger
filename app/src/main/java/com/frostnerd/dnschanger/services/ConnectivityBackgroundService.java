@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
 
@@ -64,7 +65,7 @@ public class ConnectivityBackgroundService extends Service {
         notificationBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
         Intent channelIntent = ConnectivityCheckRestartService.channelSettingsIntent(this);
         if(channelIntent != null) {
-            notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 13123, channelIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+            notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 13123, channelIntent, PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE));
             notificationBuilder.setContentText(getString(R.string.notification_connectivity_service_message_disable));
         }
 
@@ -88,8 +89,8 @@ public class ConnectivityBackgroundService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         LogFactory.writeMessage(this, LOG_TAG, "Start command received");
-        runInForeground = runInForeground || (intent != null && intent.getBooleanExtra("forceForeground", false));
-        if(runInForeground) startForeground(1285, notificationBuilder.build());
+        runInForeground = true;
+        if(runInForeground) startForeground(1285, notificationBuilder.build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED);
         else LogFactory.writeMessage(this, LOG_TAG, "Not running in foreground");
         handle = Util.maybeCreateNetworkCheckHandle(this, LOG_TAG, intent == null || intent.getBooleanExtra("initial", true));
         if(runInForeground) stopForeground(true);

@@ -1,5 +1,6 @@
 package com.frostnerd.dnschanger.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -7,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.VpnService;
@@ -29,11 +31,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.OrientationHelper;
@@ -104,6 +109,13 @@ public class MainFragment extends Fragment {
     };
     private View contentView;
 
+    private ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    startStopButton.callOnClick();
+                }
+            });
+
     private void setIndicatorState(boolean vpnRunning) {
         if(!isAdded() || isDetached()) return;
         LogFactory.writeMessage(getContextWorkaround(), LOG_TAG, "Changing IndicatorState to " + vpnRunning);
@@ -169,6 +181,13 @@ public class MainFragment extends Fragment {
             public void onClick(View buttonView) {
                 if(isDetached() || !isAdded()) return;
                 final Context context = getContextWorkaround(buttonView);
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if(ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                        return;
+                    }
+                }
+
                 Intent i;
                 try {
                     i = VpnService.prepare(context);
